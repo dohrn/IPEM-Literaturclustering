@@ -64,8 +64,9 @@ def get_user_input():
 	#cluster_multiplyer = float(input("Cluster-Multiplayer:   "))
 	kmax = int(input("kmax für Ellenbogenmethode: "))
 	explained_variance = float(input("Explained Variance für SVD [Standard = 0.7]:  "))
+	nb_clusters = int(input("Wieviele Cluster sollen erstellt werden?  "))
 	nb_topwords = 5
-	return include_abstract, include_string, include_author_keywords, database_name, suchstring, cluster_multiplyer, explained_variance, nb_topwords, kmax
+	return include_abstract, include_string, include_author_keywords, database_name, suchstring, cluster_multiplyer, explained_variance, nb_topwords, kmax, nb_clusters
 
 #Extrahiere Wörter aus Suchstring
 
@@ -155,7 +156,7 @@ def stemming(lit):
 
 def vectorizing(singles):
 
-	vectorizer_1 = TfidfVectorizer(min_df = 0.01, max_df = 1, ngram_range=(1,2))
+	vectorizer_1 = TfidfVectorizer()
 	x_titles = vectorizer_1.fit_transform(singles)
 	feature_names = pd.DataFrame(vectorizer_1.get_feature_names())
 
@@ -305,9 +306,9 @@ def agg_clustering(principalDf):
 	lit["Cluster_agg"] = list(y_kmeans)
 
 
-def cluster(principalDf, lit):
+def cluster(principalDf, lit, nb_clusters):
 	#clusters = int(cluster_multiplyer * (len(lit) / 2) ** 0.5)
-	clusters = 13
+	clusters = nb_clusters
 	model_titles = KMeans(n_clusters=clusters, random_state=5)
 	y_kmeans = model_titles.fit_predict(principalDf)
 	centroids = model_titles.cluster_centers_
@@ -396,7 +397,7 @@ def save_to_excel(database_name, include_string, evaluation_metrics, components)
 # In[11]:
 
 if __name__ == '__main__':
-	include_abstract, include_string, include_author_keywords, database_name, suchstring, cluster_multiplyer, explained_variance, nb_topwords, kmax =  get_user_input()
+	include_abstract, include_string, include_author_keywords, database_name, suchstring, cluster_multiplyer, explained_variance, nb_topwords, kmax, nb_clusters =  get_user_input()
 	searchstring, orig_searchstring = extract_searchstring(suchstring)
 	lit = keyw_titles(database_name)
 	tokenizing_stopw(searchstring, include_string, lit)
@@ -404,9 +405,9 @@ if __name__ == '__main__':
 	singles = stemming(lit)
 	vectorizer_1, x_titles, feature_names = vectorizing(singles)
 	principalDF, components = dim_reduce(x_titles, explained_variance, lit, database_name, include_string)
-	agg_clustering(principalDF)
-	y_kmeans, centroids, tf_idf_norm, tf_idf_array, clusters, evaluation_metrics = cluster(principalDF, lit)
-	plot_silhouette_ellbow(principalDF, kmax, include_string, clusters)
+	#agg_clustering(principalDF)
+	y_kmeans, centroids, tf_idf_norm, tf_idf_array, clusters, evaluation_metrics = cluster(principalDF, lit, nb_clusters)
+	#plot_silhouette_ellbow(principalDF, kmax, include_string, clusters)
 
 	dfs = get_top_features_cluster(tf_idf_array, y_kmeans, nb_topwords)
 	biggest_cluster, grouped_cluster, topwords, counts = get_clusters(dfs)
