@@ -1,4 +1,8 @@
-*.xlsx
-*.csv
-*.png
-*.jpg
+  
+/Datenbanken/*.xlsx
+/Datenbanken/*.csv
+/Ergebnisse/*.png
+/Ergebnisse/*.csv
+/Ergebnisse/*.xlsx
+
+.ipynb_checkpoints
